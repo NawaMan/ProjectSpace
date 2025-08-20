@@ -5,7 +5,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 ENV DEBIAN_FRONTEND=noninteractive
 ARG LOCALE=en_US.UTF-8
 
-# Use bash with pipefail for safer RUNs
+# Safer default shell
 SHELL ["/bin/bash","-o","pipefail","-lc"]
 
 # Update base OS, install packages, generate locale
@@ -45,18 +45,19 @@ ENV USER_NAME=coder \
     HOME=/home/coder \
     LANG=${LOCALE} \
     LC_ALL=${LOCALE} \
-    WORKSPACE=/home/coder/workspace \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    WORKSPACE=/home/coder/workspace
 
 # Create a Python venv and upgrade pip/setuptools/wheel (addresses setuptools CVEs)
+# Clean any pip caches explicitly, then make the venv default.
 RUN python3 -m venv /opt/venv \
  && /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
- && /opt/venv/bin/pip cache purge
+ && rm -rf /root/.cache/pip
 
-# Make the venv default
+# Make the venv default and set pip knobs AFTER the upgrade above
 ENV PATH=/opt/venv/bin:/home/coder/.local/bin:$PATH \
-    EDITOR=nano
+    EDITOR=nano \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
 
 # Entry that aligns coder’s uid/gid to host, then drops privileges
 COPY --chmod=0755 entry-script /usr/local/bin/entry-script
