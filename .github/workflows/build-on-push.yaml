@@ -1,0 +1,23 @@
+# .github/workflows/build-on-push.yml
+name: Build on Push
+
+on:
+  push:
+    branches:
+      - "**"   # run on any branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker info
+      - name: Build
+        run: bash ./build.sh
