@@ -20,4 +20,7 @@ jobs:
           docker --version
           docker info
       - name: Build
-        run: bash ./build.sh
+        run: ./build.sh
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
