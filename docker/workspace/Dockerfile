@@ -1,4 +1,7 @@
 # syntax=docker/dockerfile:1.7
+
+# Dockerfile for workspace (the base)
+
 ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
@@ -12,33 +15,28 @@ SHELL ["/bin/bash","-o","pipefail","-lc"]
 RUN set -eux; \
   apt-get update -qq; \
   apt-get -y upgrade; \
-  apt-get install -y --no-install-recommends \
-    bash \
+  apt-get install -y \
+    --no-install-recommends \
+    bash            \
     ca-certificates \
-    curl \
-    git \
-    gosu \
-    jq \
-    less \
-    locales \
-    nano \
-    python3 \
-    python3-pip \
-    python3-venv \
-    sudo \
-    tini \
-    tree \
-    unzip \
-    wget \
-    zip \
-    zsh; \
+    curl            \
+    git             \
+    jq              \
+    less            \
+    locales         \
+    nano            \
+    python3         \
+    python3-pip     \
+    python3-venv    \
+    sudo            \
+    tini            \
+    tree            \
+    unzip           \
+    wget            \
+    zip             \
+    zsh;            \
   rm -rf /var/lib/apt/lists/*; \
   sed -i "/${LOCALE}/s/^# //g" /etc/locale.gen && locale-gen "${LOCALE}"
-
-# If any Go toolchain slipped in via deps, remove it (silences golang/stdlib CVEs)
-RUN set -eux; \
-  apt-get purge -y 'golang*' || true; \
-  rm -rf /usr/local/go /usr/lib/go /usr/lib/go-* || true
 
 # Fixed values (name & paths). UID/GID come from HOST_UID/HOST_GID at runtime.
 ENV USER_NAME=coder \
