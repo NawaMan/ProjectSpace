@@ -14,10 +14,12 @@
 
 set -euo pipefail
 
+#== Constants ==
+USER_NAME="coder"
+HOME_DIR="/home/${USER_NAME}"
+WORKSPACE="/home/${USER_NAME}/workspace"
+
 # Allow environment to override config
-USER_NAME="${USER_NAME:-coder}"
-HOME_DIR="${HOME_DIR:-/home/${USER_NAME}}"
-WORKSPACE="${WORKSPACE:-/home/${USER_NAME}/workspace}"
 USER_SHELL="${USER_SHELL:-/bin/bash}"
 HOST_UID="${HOST_UID:-1000}"
 HOST_GID="${HOST_GID:-1000}"
@@ -70,7 +72,7 @@ fi
 echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/${USER_NAME}
 chmod 0440 /etc/sudoers.d/${USER_NAME}
 
-mkdir -p "$HOME_DIR" "$WORKSPACE" "$HOME_DIR/.local/share/jupyter/runtime"
+mkdir -p "$HOME_DIR" "$WORKSPACE"
 chown -R "$HOST_UID:$HOST_GID" "$HOME_DIR" "$WORKSPACE" || true
 
 export HOME="$HOME_DIR"
@@ -79,4 +81,4 @@ export PATH="$HOME/.local/bin:$PATH"
 cd "$WORKSPACE" 2>/dev/null || true
 
 if [ "$#" -eq 0 ]; then set -- "$USER_SHELL"; fi
-exec gosu "$USER_NAME" "$@"
+exec runuser -u "$USER_NAME" -- "$@"

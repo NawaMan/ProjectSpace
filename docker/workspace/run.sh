@@ -7,7 +7,8 @@
 
 set -euo pipefail
 
-# ---------- Defaults ----------
+# ---------- Constants ----------
+IMAGE_NAME="${IMAGE_NAME:-nawaman/coder:workspace-local}"
 CONTAINER_NAME="${CONTAINER_NAME:-workspace-run}"
 WORKSPACE="/home/coder/workspace"
 
@@ -21,16 +22,15 @@ RUN_ARGS=()
 CMD=()
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="workspace:local"
 
 show_help() {
   cat <<'EOF'
 Usage:
-  run-only.sh [OPTIONS]                 # interactive shell (bash)
-  run-only.sh [OPTIONS] -- <command...> # run a command then exit
+  run.sh [OPTIONS]                 # interactive shell (bash)
+  run.sh [OPTIONS] -- <command...> # run a command then exit
 
 Options:
-  -h, --help       Show this help message
+  -h, --help    Show this help message
 EOF
 }
 

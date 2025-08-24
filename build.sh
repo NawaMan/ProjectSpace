@@ -6,7 +6,7 @@ DOCKER_USER_SCRIPT="${DOCKER_USER_SCRIPT:-}"
 DOCKER_PAT_SCRIPT="${DOCKER_PAT_SCRIPT:-}"
 
 # ---  Setting ---
-IMAGE_NAME="nawaman/workspace"
+IMAGE_NAME="nawaman/coder"
 PLATFORMS="linux/amd64,linux/arm64"
 VERSION_FILE="version.txt"
 

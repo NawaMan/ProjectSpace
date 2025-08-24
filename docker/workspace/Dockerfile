@@ -12,49 +12,51 @@ ARG LOCALE=en_US.UTF-8
 SHELL ["/bin/bash","-o","pipefail","-lc"]
 
 # Update base OS, install packages, generate locale
-RUN set -eux; \
-  apt-get update -qq; \
-  apt-get -y upgrade; \
-  apt-get install -y \
-    --no-install-recommends \
-    bash            \
-    ca-certificates \
-    curl            \
-    git             \
-    jq              \
-    less            \
-    locales         \
-    nano            \
-    python3         \
-    python3-pip     \
-    python3-venv    \
-    sudo            \
-    tini            \
-    tree            \
-    unzip           \
-    wget            \
-    zip             \
-    zsh;            \
-  rm -rf /var/lib/apt/lists/*; \
-  sed -i "/${LOCALE}/s/^# //g" /etc/locale.gen && locale-gen "${LOCALE}"
+# Update base OS, install packages, generate locale
+RUN set -euo pipefail \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      bash \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      less \
+      locales \
+      nano \
+      python3 \
+      python3-pip \
+      python3-venv \
+      sudo \
+      tini \
+      tree \
+      unzip \
+      wget \
+      zip \
+      zsh \
+ && sed -i "/${LOCALE}/s/^# //g" /etc/locale.gen \
+ && locale-gen "${LOCALE}" \
+ && rm -rf /var/lib/apt/lists/*
 
 # Fixed values (name & paths). UID/GID come from HOST_UID/HOST_GID at runtime.
-ENV USER_NAME=coder \
+ENV USER_NAME=coder  \
     HOME=/home/coder \
-    LANG=${LOCALE} \
+    LANG=${LOCALE}   \
     LC_ALL=${LOCALE} \
     WORKSPACE=/home/coder/workspace
 
 # Create a Python venv and upgrade pip/setuptools/wheel (addresses setuptools CVEs)
-# Clean any pip caches explicitly, then make the venv default.
-RUN python3 -m venv /opt/venv \
- && /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
+# Pin exact versions for reproducibility and avoid caching.
+RUN set -euo pipefail                                               \
+ && python3 -m venv /opt/venv                                       \
+ && /opt/venv/bin/python -m pip install --no-cache-dir --no-compile \
+      pip==24.2 setuptools==75.1.0 wheel==0.44.0                    \
  && rm -rf /root/.cache/pip
 
 # Make the venv default and set pip knobs AFTER the upgrade above
 ENV PATH=/opt/venv/bin:/home/coder/.local/bin:$PATH \
-    EDITOR=nano \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    EDITOR=nano                                     \
+    PIP_DISABLE_PIP_VERSION_CHECK=1                 \
     PIP_NO_CACHE_DIR=1
 
 # Entry that aligns coder’s uid/gid to host, then drops privileges
@@ -79,13 +81,13 @@ export PIP_DISABLE_PIP_VERSION_CHECK=1
 EOF
 
 # --- Make bash and zsh source it ---
-RUN set -eux; \
-  grep -q 'profile.d/99-custom.sh' /etc/bash.bashrc 2>/dev/null || \
-    echo '[ -f /etc/profile.d/99-custom.sh ] && . /etc/profile.d/99-custom.sh' >> /etc/bash.bashrc; \
-  mkdir -p /etc/zsh; \
-  : > /etc/zsh/zshrc; \
-  grep -q 'profile.d/99-custom.sh' /etc/zsh/zshrc 2>/dev/null || \
-    echo '[[ -f /etc/profile.d/99-custom.sh ]] && source /etc/profile.d/99-custom.sh' >> /etc/zsh/zshrc
+RUN set -euo pipefail                                                                                         \
+ && mkdir -p /etc/zsh                                                                                         \
+ && touch /etc/bash.bashrc /etc/zsh/zshrc                                                                     \
+ && grep -Fq '/etc/profile.d/99-custom.sh' /etc/bash.bashrc                                                   \
+      || printf "\n[ -f /etc/profile.d/99-custom.sh ] && . /etc/profile.d/99-custom.sh\n" >> /etc/bash.bashrc \
+ && grep -Fq '/etc/profile.d/99-custom.sh' /etc/zsh/zshrc                                                     \
+      || printf "\n[ -f /etc/profile.d/99-custom.sh ] && . /etc/profile.d/99-custom.sh\n" >> /etc/zsh/zshrc
 
 # tini as PID 1, then run the aligner which execs as 'coder'
 ENTRYPOINT ["tini","-g","--","/usr/local/bin/entry-script"]

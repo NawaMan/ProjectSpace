@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ---------- Defaults ----------
-IMAGE_REPO_DEFAULT="nawaman/workspace"
+IMAGE_REPO_DEFAULT="nawaman/coder"
 VARIANT_DEFAULT="workspace"
 VERSION_DEFAULT="latest"
 
@@ -39,8 +39,6 @@ Usage:
 Options:
   -d, --daemon            Run container detached (background)
       --pull              Pull/refresh the image from registry (also pulls if image missing)
-
-      --image   <name>    Image repo/name       (default: nawaman/workspace)
       --variant <name>    Variant prefix        (default: workspace)
       --version <tag>     Version suffix        (default: latest)
       --tag     <tag>     Alias for --version (final tag is <variant>-<version>)
@@ -49,9 +47,7 @@ Options:
   -h, --help              Show this help message
 
 Notes:
-  • Final image ref: <repo>:<variant>-<version>, e.g. nawaman/workspace:workspace-latest
   • Bind: . -> /home/coder/workspace; Working dir: /home/coder/workspace
-  • HOST_UID/HOST_GID can be exported before running to override detected values.
 EOF
 }
 
@@ -60,7 +56,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -d|--daemon) DAEMON=true;         shift   ;;
     --pull)      DO_PULL=true;        shift   ;;
-    --image)     IMAGE_REPO="$2";     shift 2 ;;
     --variant)   VARIANT="$2";        shift 2 ;;
     --version)   VERSION_TAG="$2";    shift 2 ;;
     --tag)       VERSION_TAG="$2";    shift 2 ;;

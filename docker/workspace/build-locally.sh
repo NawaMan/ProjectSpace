@@ -8,20 +8,17 @@ set -euo pipefail
 
 # ---------- Defaults ----------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-workspace:local}"
+IMAGE_NAME="${IMAGE_NAME:-nawaman/coder:workspace-local}"
 
 show_help() {
   cat <<'EOF'
 Usage:
-  build.sh [OPTIONS]
+  build-locally.sh [OPTIONS]
 
-Builds the local Docker image and exits. No containers are run.
+Builds the local Docker image. No containers are run.
 
 Options:
-  -h, --help       Show this help message
-  --image NAME     Override target image name (default: workspace:local)
-  --no-cache       Build without using cache
-  --pull           Always attempt to pull a newer base image
+  -h, --help  Show this help message
 EOF
 }
 
@@ -30,8 +27,6 @@ BUILD_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help) show_help; exit 0 ;;
-    --image) shift; IMAGE_NAME="${1:?--image requires a name}"; shift || true ;;
-    --no-cache|--pull) BUILD_ARGS+=("$1"); shift ;;
     -*) echo "Error: unrecognized option: '$1'"; echo "Try '$0 --help'."; exit 2 ;;
     *)  echo "Error: unrecognized argument: '$1'"; echo "Try '$0 --help'."; exit 2 ;;
   esac
@@ -44,6 +39,6 @@ if [[ ! -f "${SCRIPT_DIR}/Dockerfile" ]]; then
 fi
 
 echo "Building local image: ${IMAGE_NAME}"
-docker build -t "$IMAGE_NAME" -f "${SCRIPT_DIR}/Dockerfile" "${SCRIPT_DIR}" "${BUILD_ARGS[@]}"
+docker build -t "$IMAGE_NAME" -f "${SCRIPT_DIR}/Dockerfile" "${SCRIPT_DIR}" --no-cache
 
 echo "Build complete: ${IMAGE_NAME}"
