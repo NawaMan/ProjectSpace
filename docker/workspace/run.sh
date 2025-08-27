@@ -7,8 +7,7 @@
 
 set -euo pipefail
 
-# ---------- Constants ----------
-IMAGE_NAME="${IMAGE_NAME:-nawaman/coder:workspace-local}"
+# ---------- Defaults ----------
 CONTAINER_NAME="${CONTAINER_NAME:-workspace-run}"
 WORKSPACE="/home/coder/workspace"
 
@@ -22,15 +21,16 @@ RUN_ARGS=()
 CMD=()
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IMAGE_NAME="nawaman/coder:workspace-local"
 
 show_help() {
   cat <<'EOF'
 Usage:
-  run.sh [OPTIONS]                 # interactive shell (bash)
-  run.sh [OPTIONS] -- <command...> # run a command then exit
+  run-only.sh [OPTIONS]                 # interactive shell (bash)
+  run-only.sh [OPTIONS] -- <command...> # run a command then exit
 
 Options:
-  -h, --help    Show this help message
+  -h, --help       Show this help message
 EOF
 }
 
@@ -46,12 +46,12 @@ done
 
 # --------- Ensure image exists ---------
 if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
-  echo "Image $IMAGE_NAME not found. Building it via build.sh..."
-  if [[ ! -x "${SCRIPT_DIR}/build.sh" ]]; then
-    echo "Error: build.sh not found or not executable in ${SCRIPT_DIR}" >&2
+  echo "Image $IMAGE_NAME not found. Building it via build-locally.sh..."
+  if [[ ! -x "${SCRIPT_DIR}/build-locally.sh" ]]; then
+    echo "Error: build-locally.sh not found or not executable in ${SCRIPT_DIR}" >&2
     exit 1
   fi
-  "${SCRIPT_DIR}/build.sh"
+  "${SCRIPT_DIR}/build-locally.sh"
 fi
 
 # Clean up any previous container with the same name

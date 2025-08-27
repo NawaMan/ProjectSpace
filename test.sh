@@ -8,7 +8,9 @@ cleanup() {
 trap cleanup EXIT  # run cleanup on script exit (success or error)
 
 cleanup
-./run-workspace.sh -- date | tee in-workspace.txt > in-host.txt
+DATE=$(date)
+echo $DATE > in-host.txt
+./run-workspace.sh -- echo $DATE '>' in-workspace.txt
 
 if diff -u in-workspace.txt in-host.txt; then
   echo "✅ Files match"
